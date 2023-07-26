@@ -22,11 +22,10 @@ class TransactionQueueService
         $this->connection->close();
     }
 
-    public function sendTransactionToQueue(array $data): void
+    public function sendTransactionToQueue(object $data): void
     {
-        $jsonData = json_encode($data);
         $queueName = 'transactions';
-        $message = new AMQPMessage($jsonData);
+        $message = new AMQPMessage($data);
         $this->channel->basic_publish($message, '', $queueName);
     }
 }

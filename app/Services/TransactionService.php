@@ -48,9 +48,10 @@ class TransactionService
       throw new InsufficientBalanceException();
     }
 
-    $this->transactionQueueService->sendTransactionToQueue($data);
+    $response = $this->repository->store($data);
+    $this->transactionQueueService->sendTransactionToQueue($response);
 
-    return $this->repository->store($data);
+    return $response;
   }
 
   public function update(string $id, array $data): object | null
