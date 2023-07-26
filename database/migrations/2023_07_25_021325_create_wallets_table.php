@@ -18,7 +18,7 @@ class CreateWalletsTable extends Migration
             $table->foreignId('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('name');
-            $table->string('balance')->default(0);
+            $table->float('balance')->default(100);
             $table->timestamps();
         });
     }
