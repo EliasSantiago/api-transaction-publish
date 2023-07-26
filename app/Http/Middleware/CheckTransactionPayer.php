@@ -19,9 +19,9 @@ class CheckTransactionPayer
     public function handle(Request $request, Closure $next)
     {
         $payerId = $request->input('payer');
-        $userId = Auth::id();
+        $user = Auth()->user();
 
-        if ($payerId !== $userId) {
+        if ($payerId !== $user->id || (isset($user->cnpj) && !empty($user->cnpj))) {
             return Response::json(['error' => 'Unauthorized.'], 401);
         }
 
