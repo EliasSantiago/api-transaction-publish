@@ -1,0 +1,68 @@
+version: "3.7"
+
+services:
+    # image project
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        depends_on:
+            - redis
+        networks:
+            - api-transaction
+
+    # nginx
+    nginx:
+        image: nginx:alpine
+        restart: unless-stopped
+        ports:
+            - "8081:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/:/etc/nginx/conf.d/
+        networks:
+            - api-transaction
+
+    # db postgres
+    postgres:
+        image: postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - "./.docker/postgres:/var/lib/postgresql/data"
+        ports:
+            - "5432:5432"
+        networks:
+            - api-transaction
+
+    # RabbitMQ
+    rabbitmq:
+        image: rabbitmq:3.8.16-management
+        container_name: rabbitmq
+        hostname: rabbitmq
+        ports:
+            - "${RABBITMQ_PORT}:5672"
+            - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+            - "15692:15692"
+        environment:
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+            - RABBITMQ_DEFAULT_VHOST=/
+        networks:
+            - api-transaction
+
+    # redis
+    redis:
+        image: redis:latest
+        networks:
+            - api-transaction
+
+networks:
+    api-transaction:
+        driver: bridge
