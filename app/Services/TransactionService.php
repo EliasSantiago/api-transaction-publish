@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Repositories\TransactionRepositoryInterface;
 use App\Services\TransactionPublicationWrapper as ServicesTransactionPublicationWrapper;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 use TransactionPublicationWrapper;
 
 class TransactionService
@@ -29,7 +30,11 @@ class TransactionService
 
   public function getAll(): object | null
   {
-    return $this->repository->getAll();
+    try {
+      return $this->repository->getAll();
+    } catch (\Throwable $th) {
+      return null;
+    }
   }
 
   public function store(array $data): object
@@ -53,18 +58,19 @@ class TransactionService
     }
 
     $response = $this->repository->store($data);
+    $response->status = false;
 
-    // Variável booleana para armazenar o resultado da publicação
-    $isPublishedSuccessfully = false;
-
-    // Chama o método sendTransactionToQueue() e passa os dados da transação e a variável booleana
-    $this->transactionQueueService->sendTransactionToQueue($response, $isPublishedSuccessfully);
-
-    // Após a publicação, verificamos o resultado e atualizamos o registro no banco de dados conforme necessário
-    if (!$isPublishedSuccessfully) {
-      // Se a publicação na fila falhou, atualizamos o campo "failed_transaction" no registro correspondente
-      Transaction::where('id', $response->id)
-        ->update(['failed_transaction' => true]);
+    try {
+        $isPublished = $this->transactionQueueService->sendTransactionToQueue($response);
+    
+        if (!$isPublished) {
+            $response->failed_transaction = true;
+            $response->save();
+        }
+    } catch (\Exception $e) {
+        Log::error($e->getMessage());
+    } finally {
+        unset($queueService);
     }
 
     return $response;

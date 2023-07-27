@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Services\TransactionPublicationWrapper as ServicesTransactionPublicationWrapper;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
-use TransactionPublicationWrapper;
 
 class TransactionQueueService
 {
@@ -14,33 +12,44 @@ class TransactionQueueService
 
     public function __construct(string $host, int $port, string $user, string $password)
     {
-        $this->connection = new AMQPStreamConnection($host, $port, $user, $password);
-        $this->channel = $this->connection->channel();
+        $this->connectToRabbitMQ($host, $port, $user, $password);
     }
 
     public function __destruct()
     {
-        $this->channel->close();
-        $this->connection->close();
+        if ($this->connection) {
+            $this->channel->close();
+            $this->connection->close();
+        }
     }
 
-    public function sendTransactionToQueue(object $data, bool &$isPublishedSuccessfully): void
+
+    public function sendTransactionToQueue(object $data): bool
     {
-        //$queueName = 'transactions';
-        // $message = new AMQPMessage($data);
-        // $this->channel->basic_publish($message, '', $queueName);
+        if (!$this->isRabbitMQAvailable()) {
+            return false;
+        }
 
         $queueName = 'transactions';
-        $message = new AMQPMessage(json_encode($data));
-    
+        $message = new AMQPMessage($data);
         $this->channel->basic_publish($message, '', $queueName);
-    
-        // Aguarda o resultado da publicação
+
+        return true;
+    }
+
+    private function connectToRabbitMQ(string $host, int $port, string $user, string $password): void
+    {
         try {
-            $this->channel->wait_for_pending_acks_returns(5); // Tempo de espera em segundos
-            $isPublishedSuccessfully = true;
-        } catch (\PhpAmqpLib\Exception\AMQPOutOfBoundsException $e) {
-            $isPublishedSuccessfully = false;
+            $this->connection = new AMQPStreamConnection($host, $port, $user, $password);
+            $this->channel = $this->connection->channel();
+        } catch (\Exception $e) {
+            $this->connection = null;
+            $this->channel = null;
         }
+    }
+
+    private function isRabbitMQAvailable(): bool
+    {
+        return $this->connection !== null;
     }
 }

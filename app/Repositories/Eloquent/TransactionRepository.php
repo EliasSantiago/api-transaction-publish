@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Transaction as Model;
 use App\Repositories\TransactionRepositoryInterface;
+use App\Models\Transaction;
 
 class TransactionRepository implements TransactionRepositoryInterface
 {
@@ -21,6 +22,11 @@ class TransactionRepository implements TransactionRepositoryInterface
     $data['value']  = $data['value'];
     $data['status'] = false;
     return $this->model->create($data);
+  }
+
+  public function addToLocalQueue(Transaction $transaction): void
+  {
+      $transaction->update(['failed_transaction' => true]);
   }
 
   public function update(string $id, array $data): object | null
