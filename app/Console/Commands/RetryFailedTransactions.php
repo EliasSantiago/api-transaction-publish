@@ -28,10 +28,9 @@ class RetryFailedTransactions extends Command
             if ($isPublished) {
                 $transaction->failed_transaction = false;
                 $transaction->retry_count = 0;
-            } else {
-                $transaction->retry_count++;
             }
 
+            $transaction->retry_count++;
             $transaction->save();
         }
     }

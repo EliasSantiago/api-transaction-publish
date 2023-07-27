@@ -13,23 +13,13 @@ class WalletService
     $this->repository = $repository;
   }
 
-  public function show(int $id): object | null
+  public function show(int $walletId): object | null
   {
-    return $this->repository->show($id);
+    return $this->repository->show($walletId);
   }
   
   public function store(array $data): object
   {
     return $this->repository->store($data);
-  }
-
-  public function update(string $id, array $data): object | null
-  {
-    return $this->repository->update($id, $data);
-  }
-
-  public function delete(string $id): bool
-  {
-    return $this->repository->delete($id);
   }
 }

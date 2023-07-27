@@ -111,13 +111,8 @@ class WalletController extends Controller
      *     )
      * )
      */
-    public function show($id)
+    public function show($userId)
     {
-        return response()->json($this->service->show($id), 200);
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
+        return response()->json($this->service->show($userId), 200);
     }
 }

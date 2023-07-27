@@ -5,19 +5,22 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterUserRequest;
-use App\Http\Resources\UserResource;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     protected $service;
+    protected $user;
+    protected $hash;
 
-    public function __construct(UserService $service)
+    public function __construct(UserService $service, User $user, Hash $hash)
     {
         $this->service = $service;
+        $this->user    = $user;
+        $this->hash    = $hash;
     }
 
     /**
@@ -61,12 +64,12 @@ class AuthController extends Controller
         $cpf = $request->has('cpf');
         $cnpj = $request->has('cnpj');
 
-        User::create([
-            'name'      => $request->name,
-            'email'     => $request->email,
-            'cpf'       => $cpf ? $request->cpf : null,
-            'cnpj'      => $cnpj ? $request->cnpj : null,
-            'password'  => Hash::make($request->password),
+        $this->user->create([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'cpf' => $cpf ? $request->input('cpf') : null,
+            'cnpj' => $cnpj ? $request->input('cnpj') : null,
+            'password' => bcrypt($request->input('password')),
         ]);
 
         return response()->json(['message' => 'Conta criada com sucesso!']);
@@ -112,11 +115,9 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => ['As credenciais fornecidas são inválidas.'],
             ]);
         }
-
-        if ($request->has('logout_others_devices')) $user->tokens()->delete();
 
         return response()->json([
             'token' => $user->createToken("api_transaction")->plainTextToken,
@@ -155,7 +156,7 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function me()
+    public function getUserData()
     {
         $user = auth()->user();
         return $this->service->getUserData($user->id);

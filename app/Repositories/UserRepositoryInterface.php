@@ -4,6 +4,6 @@ namespace App\Repositories;
 
 interface UserRepositoryInterface
 {
-  public function getById(int $id): object | null;
-  public function getUserData(int $id): object | null;
+  public function getById(int $userId): object | null;
+  public function getUserData(int $userId): object | null;
 }

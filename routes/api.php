@@ -20,7 +20,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/me', [AuthController::class, 'getUserData']);
 
     Route::post('/wallet', [WalletController::class, 'store']);
     Route::get('/wallet/{wallet_id}', [WalletController::class, 'show']);

@@ -7,25 +7,22 @@ use App\Exceptions\WalletNotFoundException;
 use App\Exceptions\ZeroValueException;
 use App\Models\Transaction;
 use App\Repositories\TransactionRepositoryInterface;
-use App\Services\TransactionPublicationWrapper as ServicesTransactionPublicationWrapper;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
-use TransactionPublicationWrapper;
 
 class TransactionService
 {
   private $repository;
   private $userService;
-  private $transactionQueueService;
+  private $queueService;
 
   public function __construct(
     TransactionRepositoryInterface $repository,
     UserService $userService,
-    TransactionQueueService $transactionQueueService
+    TransactionQueueService $queueService
   ) {
     $this->repository = $repository;
     $this->userService = $userService;
-    $this->transactionQueueService = $transactionQueueService;
+    $this->queueService = $queueService;
   }
 
   public function getAll(): object | null
@@ -61,22 +58,15 @@ class TransactionService
     $response->status = false;
 
     try {
-      $isPublished = $this->transactionQueueService->sendTransactionToQueue($response);
+      $isPublished = $this->queueService->sendTransactionToQueue($response);
       if (!$isPublished) {
         $response->failed_transaction = true;
         $response->save();
       }
     } catch (\Exception $e) {
       Log::error($e->getMessage());
-    } finally {
-      unset($queueService);
     }
 
     return $response;
-  }
-
-  public function update(string $id, array $data): object | null
-  {
-    return $this->repository->update($id, $data);
   }
 }

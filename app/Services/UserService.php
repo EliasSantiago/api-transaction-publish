@@ -13,13 +13,13 @@ class UserService
     $this->repository = $repository;
   }
 
-  public function getById(string $id): object | null
+  public function getById(string $userId): object | null
   {
-    return $this->repository->getById($id);
+    return $this->repository->getById($userId);
   }
 
-  public function getUserData(int $id): object | null
+  public function getUserData(int $userId): object | null
   {
-    return $this->repository->getUserData($id);
+    return $this->repository->getUserData($userId);
   }
 }

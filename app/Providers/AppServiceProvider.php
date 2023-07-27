@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(WalletRepositoryInterface::class, WalletRepository::class);
         $this->app->singleton(TransactionRepositoryInterface::class, TransactionRepository::class);
 
-        $this->app->bind(TransactionQueueService::class, function ($app) {
+        $this->app->bind(TransactionQueueService::class, function () {
             $host = env('RABBITMQ_HOST');
             $port = env('RABBITMQ_PORT');
             $user = env('RABBITMQ_USER');

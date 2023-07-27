@@ -24,26 +24,9 @@ class WalletRepository implements WalletRepositoryInterface
     return $this->model->create($data);
   }
 
-  public function update(string $id, array $data): object | null
-  {
-    if (!$user = $this->show($id)) {
-      return null;
-    }
-    $user->update($data);
-    return $user;  
-  }
-
-  public function delete(string $id): bool
-  {
-    if (!$user = $this->show($id)) {
-      return false;
-    }
-    return $user->delete();
-  }
-
-  public function show(string $id): object | null
+  public function show(string $walletId): object | null
   {
     $user = Auth()->user();
-    return $this->model->where('user_id', $user->id)->findOrFail($id);
+    return $this->model->where('user_id', $user->id)->findOrFail($walletId);
   }
 }

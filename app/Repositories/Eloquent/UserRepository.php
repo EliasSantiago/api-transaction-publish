@@ -14,31 +14,13 @@ class UserRepository implements UserRepositoryInterface
     $this->model = $model;
   }
 
-  public function getById(int $id): object | null
+  public function getById(int $userId): object | null
   {
-    return $this->model->findOrFail($id);
+    return $this->model->findOrFail($userId);
   }
 
-  public function getUserData(int $id): ?object
+  public function getUserData(int $userId): ?object
   {
-    return $this->model->with('wallets')->find($id);
+    return $this->model->with('wallets')->find($userId);
   }
-
-  public function update(string $id, array $data): object | null
-  {
-    if (!$user = $this->getById($id)) {
-      return null;
-    }
-    $user->update($data);
-    return $user;  
-  }
-
-  public function delete(string $id): bool
-  {
-    if (!$user = $this->getById($id)) {
-      return false;
-    }
-    return $user->delete();
-  }
-
 }
