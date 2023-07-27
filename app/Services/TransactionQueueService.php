@@ -26,12 +26,15 @@ class TransactionQueueService
 
     public function sendTransactionToQueue(object $data): bool
     {
-        if (!$this->isRabbitMQAvailable()) {
+        $authorizationService = new AuthorizationService();
+        $isAuthorized = $authorizationService->checkAuthorization();
+
+        if (!$this->isRabbitMQAvailable() || !$isAuthorized) {
             return false;
         }
-
+    
         $queueName = 'transactions';
-        $message = new AMQPMessage($data);
+        $message = new AMQPMessage(json_encode($data));
         $this->channel->basic_publish($message, '', $queueName);
 
         return true;

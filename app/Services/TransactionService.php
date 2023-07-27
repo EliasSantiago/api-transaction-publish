@@ -61,16 +61,15 @@ class TransactionService
     $response->status = false;
 
     try {
-        $isPublished = $this->transactionQueueService->sendTransactionToQueue($response);
-    
-        if (!$isPublished) {
-            $response->failed_transaction = true;
-            $response->save();
-        }
+      $isPublished = $this->transactionQueueService->sendTransactionToQueue($response);
+      if (!$isPublished) {
+        $response->failed_transaction = true;
+        $response->save();
+      }
     } catch (\Exception $e) {
-        Log::error($e->getMessage());
+      Log::error($e->getMessage());
     } finally {
-        unset($queueService);
+      unset($queueService);
     }
 
     return $response;
