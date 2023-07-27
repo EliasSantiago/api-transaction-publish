@@ -16,11 +16,6 @@ class TransactionRepository implements TransactionRepositoryInterface
 
   public function store(array $data): object
   {
-    $user = Auth()->user();
-    if ($user->id != $data['payer']) {
-      return null;
-    }
-
     $data['payer']  = $data['payer'];
     $data['payee']  = $data['payee'];
     $data['value']  = $data['value'];
@@ -30,23 +25,25 @@ class TransactionRepository implements TransactionRepositoryInterface
 
   public function update(string $id, array $data): object | null
   {
-    if (!$user = $this->show($id)) {
-      return null;
-    }
-    $user->update($data);
-    return $user;  
+    // if (!$user = $this->show($id)) {
+    //   return null;
+    // }
+    // $user->update($data);
+    // return $user;  
+    return null;
   }
 
   public function delete(string $id): bool
   {
-    if (!$user = $this->show($id)) {
-      return false;
-    }
-    return $user->delete();
+    // if (!$user = $this->show($id)) {
+    //   return false;
+    // }
+    //return $user->delete();
+    return false;
   }
 
-  public function show(string $id): object | null
+  public function getAll(): object | null
   {
-    return $this->model->findOrFail($id);
+    return $this->model->orderBy('created_at', 'DESC')->paginate(100);
   }
 }

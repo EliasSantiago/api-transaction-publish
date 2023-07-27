@@ -26,4 +26,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet/{wallet_id}', [WalletController::class, 'show']);
 
     Route::post('/transaction', [TransactionController::class, 'store'])->middleware('checkTransactionPayer');
+    Route::get('/transaction', [TransactionController::class, 'getAll']);
 });

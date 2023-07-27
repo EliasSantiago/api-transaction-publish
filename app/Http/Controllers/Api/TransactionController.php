@@ -88,9 +88,10 @@ class TransactionController extends Controller
         }
     }
 
-    public function show($id)
+    public function getAll()
     {
-        //
+        $data = $this->service->getAll();
+        return response()->json($data);
     }
 
     public function update(Request $request, $id)

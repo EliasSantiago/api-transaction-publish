@@ -44,6 +44,7 @@ services:
     # RabbitMQ
     rabbitmq:
         image: rabbitmq:3.8.16-management
+        restart: unless-stopped
         container_name: rabbitmq
         hostname: rabbitmq
         ports:

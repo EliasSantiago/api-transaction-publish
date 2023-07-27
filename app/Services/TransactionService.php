@@ -5,7 +5,11 @@ namespace App\Services;
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\WalletNotFoundException;
 use App\Exceptions\ZeroValueException;
+use App\Models\Transaction;
 use App\Repositories\TransactionRepositoryInterface;
+use App\Services\TransactionPublicationWrapper as ServicesTransactionPublicationWrapper;
+use Illuminate\Database\Eloquent\Collection;
+use TransactionPublicationWrapper;
 
 class TransactionService
 {
@@ -23,9 +27,9 @@ class TransactionService
     $this->transactionQueueService = $transactionQueueService;
   }
 
-  public function show(int $id): object | null
+  public function getAll(): object | null
   {
-    return $this->repository->show($id);
+    return $this->repository->getAll();
   }
 
   public function store(array $data): object
@@ -49,7 +53,19 @@ class TransactionService
     }
 
     $response = $this->repository->store($data);
-    $this->transactionQueueService->sendTransactionToQueue($response);
+
+    // Variável booleana para armazenar o resultado da publicação
+    $isPublishedSuccessfully = false;
+
+    // Chama o método sendTransactionToQueue() e passa os dados da transação e a variável booleana
+    $this->transactionQueueService->sendTransactionToQueue($response, $isPublishedSuccessfully);
+
+    // Após a publicação, verificamos o resultado e atualizamos o registro no banco de dados conforme necessário
+    if (!$isPublishedSuccessfully) {
+      // Se a publicação na fila falhou, atualizamos o campo "failed_transaction" no registro correspondente
+      Transaction::where('id', $response->id)
+        ->update(['failed_transaction' => true]);
+    }
 
     return $response;
   }
